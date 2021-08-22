@@ -1,20 +1,9 @@
 import React, {Component} from 'react';
-import Header from './Header';
-import { CanvasElement } from './draw';
+import Header from './Headers/Header';
 import './App.css';
 import './draw';
 
-type inputError = {
-  [key: string]: boolean;
-}
-
-interface IDataInputProps {
-}
-
-interface IDataInputState  {
-}
-
-class DataInput extends Component<IDataInputProps, IDataInputState> {
+class DataInput extends Component {
 
   constructor(props: any) {
     super(props);

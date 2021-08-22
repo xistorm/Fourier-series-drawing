@@ -1,3 +1,5 @@
+import { getSize, getSpeed } from "./utils";
+
 type canvas = {
     [key: string]: HTMLCanvasElement;
 }
@@ -151,33 +153,10 @@ export class CanvasElement {
         this.refresh(Object.keys(this.ctx));
     }
 
-    public draw = (amount?: number, speedDiff?: number, sizeDiff?: number) => {
+    public draw = (amount?: number, speed?: number[], size?: number[]) => {
         if (amount) this.amount = amount;
-
-        if (speedDiff) {
-            let speed: number[] = [];
-            for (let i = 1, curr = 1; i <= this.amount; ++i, curr += speedDiff) {
-                // const value = (Math.random() + i) * 2;
-                // const value = i % 2 == 0 ? -curr : curr;
-                const value = curr;
-                speed.push(value);
-            }
-            this.speed = speed;
-        }
-
-        if (sizeDiff) {
-            const height = this.height - 400;
-            const len = height / 2 * (1/sizeDiff - 1) / (Math.pow(1/sizeDiff, this.amount) - 1);
-            let size: number[] = [len];
-            for (let i = 1; i < this.amount; ++i) {
-                // const value = (Math.random() + i) * 100;
-                const value = size[i - 1] / sizeDiff;
-                size.push(value);
-            }
-            this.size = size;
-        };
-
-        console.log(amount);
+        if (speed) this.speed = speed;
+        if (size) this.size = size;
 
         this.animations.filter(id => id >= 0).map(id => window.cancelAnimationFrame(id));
         this.refresh(Object.keys(this.ctx));

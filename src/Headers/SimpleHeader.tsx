@@ -1,107 +1,88 @@
 import React from "react";
 import { Component } from "react";
+import { InputItem } from "./InputItem";
 
 type ReactRef<T> = {
     [key: string]: React.RefObject<T>,
 }
 
-interface IInputItemProps {
-    name: string;
-    defaultValue: number;
-}
-
-interface IInputItemState {
-    error: boolean;
-}
-
 interface IHeaderFormProps {
-    draw: (amount?: number, speedDiff?: number, sizeDiff?: number) => void;
+    draw: (amount: number, speedDiff: number, sizeDiff: number) => void;
+    updateData?: (amount: number, speedDiff: number, sizeDiff: number) => void;
+    expand: () => void;
+    expanend: boolean;
 }
 
 interface IHeaderFormState {
 }
 
-class InputItem extends Component<IInputItemProps, IInputItemState> {
-    private _value?: React.RefObject<HTMLInputElement> = React.createRef();
-
-    public get value(): number {
-        console.log(this._value);
-        return Number(this._value?.current?.value) || this.props.defaultValue;
-    }
-
-    public get error() {
-        return this.state.error;
-    }
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            error: false,
-        }
-    }
-    
-    private handleDataInput = (event: any) => {
-        const input = event.currentTarget;
-
-        if (input.value.length && isNaN(input.value)) {
-            this.setState({
-                error: true,
-            });
-        } else {
-            this.setState({
-                error: false,
-            });
-        }
-    }
-
-    render() {
-        return (
-            <div className="inputItem">
-                <label htmlFor={this.props.name}>Количество векторов: </label>
-                <input
-                    className={this.state.error ? 'incorrect input' : 'input'}
-                    placeholder='1'
-                    name={this.props.name}
-                    onChange={this.handleDataInput}
-                    ref={this._value}
-                >
-                </input>
-            </div>
-        );
-    }
-}
-
 export class HeaderForm extends Component<IHeaderFormProps, IHeaderFormState> {
     private inputs: ReactRef<InputItem> = {};
-
-    private readonly inputFieldNames = {'amount': 1, 'speed': 1, 'size': 2};
+    private readonly inputFieldData = {
+        amount: {
+            defaultValue: 1,
+            text: 'количество векторов',
+        },
+        speed: {
+            defaultValue: 1,
+            text: 'коэффициент скорости',
+        },
+        size: {
+            defaultValue: 2,
+            text: 'коэффициент размера',
+        },
+    };
 
     constructor(props) {
         super(props);
 
-        Object.keys(this.inputFieldNames).forEach(name => this.inputs[name] = React.createRef())
+        Object.keys(this.inputFieldData).forEach(name => this.inputs[name] = React.createRef());
     }
 
-    handleDataSet = (event: any) => {
+    private handleDataSet = (event: any) => {
         event.preventDefault();
 
-        const amount = this.inputs.amount.current?.value;
-        const speed =this.inputs.speed.current?.value;
-        const size = this.inputs.size.current?.value;
-        const hasErrors = Object.keys(this.inputFieldNames).some(key => this.inputs[key].current?.error === true);
+        const data = this.updateField();
+        const [amount, speed, size] = data.values;
 
-        if (!hasErrors) {
+        if (!data.hasErrors) {
             this.props.draw(amount, speed, size);
+        }
+    }
+
+    private updateField = (row?: number, name?: string, value?: number) => {
+        const amount = this.inputs.amount.current?.value || this.inputFieldData.amount.defaultValue;
+        const speed = this.inputs.speed.current?.value || this.inputFieldData.speed.defaultValue;
+        const size = this.inputs.size.current?.value || this.inputFieldData.size.defaultValue;
+        const hasErrors = Object.keys(this.inputFieldData).some(key => this.inputs[key].current?.error === true);
+
+        if (!hasErrors && this.props.updateData) {
+            this.props.updateData(amount, speed, size);
+        }
+
+        return {
+            values: [amount, speed, size],
+            hasErrors: hasErrors,
         }
     }
 
     render() {
         return (
             <form className="data" onSubmit={this.handleDataSet}>
-                {Object.keys(this.inputFieldNames).map(name => <InputItem key={name} defaultValue={this.inputFieldNames[name]} name={name} ref={this.inputs[name]} />)}
+                <div onClick={this.props.expand} className="button select">Настройки</div>
 
-                <input type="submit" className="submit" value="Сгенерировать" />
+                {Object.keys(this.inputFieldData).map(name => {
+                        return <InputItem
+                            updateField={this.updateField}
+                            key={name}
+                            name={name}
+                            text={this.inputFieldData[name].text}
+                            defaultValue={this.inputFieldData[name].defaultValue}
+                            ref={this.inputs[name]}
+                        />
+                })}
+
+                <input type="submit" className={"button" + (this.props.expanend ? " hidden" : "")} value="Сгенерировать" />
             </form>
         )
     }
