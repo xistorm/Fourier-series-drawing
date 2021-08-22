@@ -43,7 +43,6 @@ export class CanvasElement {
     }
 
     private refresh = (names: string[]) => {
-        console.log(names);
         if (this.time > Math.pow(360, 5)) this.time = 0;
         
         names.forEach(name => {
@@ -177,6 +176,8 @@ export class CanvasElement {
             }
             this.size = size;
         };
+
+        console.log(amount);
 
         this.animations.filter(id => id >= 0).map(id => window.cancelAnimationFrame(id));
         this.refresh(Object.keys(this.ctx));
